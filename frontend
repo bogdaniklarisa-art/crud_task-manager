@@ -1,0 +1,66 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState("");
+
+  const fetchTasks = async () => {
+    const res = await axios.get("http://localhost:5000/tasks");
+    setTasks(res.data);
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const addTask = async () => {
+    await axios.post("http://localhost:5000/tasks", { title });
+    setTitle("");
+    fetchTasks();
+  };
+
+  const deleteTask = async (id) => {
+    await axios.delete(`http://localhost:5000/tasks/${id}`);
+    fetchTasks();
+  };
+
+  const toggleTask = async (task) => {
+    await axios.put(`http://localhost:5000/tasks/${task._id}`, {
+      completed: !task.completed
+    });
+    fetchTasks();
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Task Manager</h1>
+
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="New task"
+      />
+      <button onClick={addTask}>Add</button>
+
+      <ul>
+        {tasks.map((t) => (
+          <li key={t._id}>
+            <span
+              onClick={() => toggleTask(t)}
+              style={{
+                cursor: "pointer",
+                textDecoration: t.completed ? "line-through" : "none"
+              }}
+            >
+              {t.title}
+            </span>
+            <button onClick={() => deleteTask(t._id)}>❌</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
